@@ -75,6 +75,27 @@ public class EnumRuleTest {
         assertThat(result2.fullName(), is("org.jsonschema2pojo.rules.Status_"));
     }
 
+    @Test
+    public void test() {
+        Answer<String> firstArgAnswer = new FirstArgAnswer<String>();
+        when(nameHelper.replaceIllegalCharacters(anyString())).thenAnswer(firstArgAnswer);
+        when(nameHelper.normalizeName(anyString())).thenAnswer(firstArgAnswer);
+
+        JPackage jpackage = new JCodeModel()._package(getClass().getPackage().getName());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        arrayNode.add("A+");
+        arrayNode.add("A");
+        arrayNode.add("A-");
+        ObjectNode enumNode = objectMapper.createObjectNode();
+        enumNode.put("type", "string");
+        enumNode.put("enum", arrayNode);
+
+        JType enumType = rule.apply("status", enumNode, jpackage, schema);
+        arrayNode.add("A+");
+    }
+
     private static class FirstArgAnswer<T> implements Answer<T> {
         @Override
         public T answer(InvocationOnMock invocation) throws Throwable {
